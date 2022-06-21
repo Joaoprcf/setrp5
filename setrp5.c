@@ -71,30 +71,43 @@
 #define PWM_FLAGS 0              ///< PWM flags
 #endif
 
-uint16_t adcbuffer[ARRAY_SIZE];
-_Atomic uint16_t avg_value = 0;
+uint16_t adcbuffer[ARRAY_SIZE]; ///< ADC buffer
+_Atomic uint16_t avg_value = 0; ///< Avg value for the readings
 
-_Atomic bool manualMode = true;
-_Atomic uint32_t manualIntensity = 0;
+_Atomic bool manualMode = true;       ///< Bool for the Manual/Auto Mode
+_Atomic uint32_t manualIntensity = 0; ///< Intensity for Manual mode
+/**
+ * @brief Struct for fifo
 
+  */
 struct data_item_t
 {
     void *fifo_reserved; /* 1st word reserved for use by FIFO */
     uint8_t type;        /* Event type */
 };
+/**
+ * @brief Struct for the Button
 
+  */
 static char SWNODE[] = {
     SW4_NODE,
     SW5_NODE,
     SW6_NODE,
     SW7_NODE};
 
+/**
+ * @brief Struct for the Debouncer
+
+  */
 typedef struct debouncer
 {
     unsigned int dcIndex;
     char state;
 };
+/**
+ * @brief Struct for Rules
 
+  */
 typedef struct st_rule
 {
     uint32_t from;
@@ -104,11 +117,11 @@ typedef struct st_rule
 } Rule;
 
 /**
- * @brief Verification od rules
- *
- * @return bool
-
-  */
+ * Verification of Rules
+ * @param  seconds               uint32_t
+ * @param  rule                  Rule
+ * @return         boolean
+ */
 bool isRuleValid(uint32_t seconds, Rule *rule)
 {
     if (rule->from < rule->to && seconds >= rule->from && seconds < rule->to)
@@ -120,40 +133,40 @@ bool isRuleValid(uint32_t seconds, Rule *rule)
     return false;
 }
 
-static struct debouncer buttondb[BUTTON_NUM];
-const struct device *gpio0_dev[BUTTON_NUM];
-const struct device *pwm = NULL;
+static struct debouncer buttondb[BUTTON_NUM]; ///< Struct Debouncer
+const struct device *gpio0_dev[BUTTON_NUM];   ///< Struct Device for the Board
+const struct device *pwm = NULL;              ///< Struct Device for the PWM
 
-const struct device *adc_dev = NULL;
-_Atomic uint8_t ptr = 0;
+const struct device *adc_dev = NULL; ///< Struct Device for the ADC
+_Atomic uint8_t ptr = 0;             ///<
 
-static Rule rules[20];
-uint32_t rules_size = 0;
-struct k_mutex rule_lock;
+static Rule rules[20];    ///< Struct Rules
+uint32_t rules_size = 0;  ///< Size of Rules
+struct k_mutex rule_lock; ///< Mutex for Rules
 
-char terminalBuffer[TERMINAL_BUFFER_SIZE] = {0};
-_Atomic int idxBuffer = 0;
+char terminalBuffer[TERMINAL_BUFFER_SIZE] = {0}; ///< Size of the buffer for the reading terminal
+_Atomic int idxBuffer = 0;                       ///< ID of the Atomic buffer
 
-K_THREAD_STACK_DEFINE(button_reader_stack, STACK_SIZE);
-K_THREAD_STACK_DEFINE(value_filter_stack, STACK_SIZE);
-K_THREAD_STACK_DEFINE(controller_stack, STACK_SIZE);
-K_THREAD_STACK_DEFINE(terminal_reader_stack, STACK_SIZE);
+K_THREAD_STACK_DEFINE(button_reader_stack, STACK_SIZE);   ///< Size fo Stack for the Thread reading buttons
+K_THREAD_STACK_DEFINE(value_filter_stack, STACK_SIZE);    ///< Size fo Stack for the Thread filter
+K_THREAD_STACK_DEFINE(controller_stack, STACK_SIZE);      ///< Size fo Stack for the Thread controller
+K_THREAD_STACK_DEFINE(terminal_reader_stack, STACK_SIZE); ///< Size fo Stack for the Thread reading terminal
 
-struct k_thread button_reader_data;
-struct k_thread value_filter_data;
-struct k_thread controller_data;
-struct k_thread terminal_reader_data;
+struct k_thread button_reader_data;   ///< Struct for the thread reading buttons
+struct k_thread value_filter_data;    ///< Struct for the thread Filter
+struct k_thread controller_data;      ///< Struct for the thread controller
+struct k_thread terminal_reader_data; ///< Struct for the thread reading terminal
 
 /* Create task IDs */
-k_tid_t button_reader_tid;
-k_tid_t value_filter_tid;
-k_tid_t controller_tid;
-k_tid_t terminal_reader_tid;
+k_tid_t button_reader_tid;   ///< ID for button thread
+k_tid_t value_filter_tid;    ///< ID for Filter thread
+k_tid_t controller_tid;      ///< ID for controller thread
+k_tid_t terminal_reader_tid; ///< ID for terminal reader thread
 
-void thread_button_reader(void *args);
-void thread_value_filter(void *args);
-void thread_controller(void *args);
-void thread_terminal_reader(void *args);
+void thread_button_reader(void *args);   ///< Thread for reading buttons
+void thread_value_filter(void *args);    ///< Thread for the filter of values read
+void thread_controller(void *args);      ///< Thread for the controller
+void thread_terminal_reader(void *args); ///< Thread for reading the terminal
 
 /**
  * @brief Retrieve an ADC sample a buffer
@@ -169,11 +182,10 @@ static const struct adc_channel_cfg my_channel_cfg = {
     .input_positive = ADC_CHANNEL_INPUT};
 
 /**
- * @brief Samples values to ADC sample buffer
- *
- * @return int
-
-  */
+ * Samples values of ADC
+ * @param  adc_sample_buffer               uint16_t
+ * @return                   int
+ */
 static int adc_sample(uint16_t *adc_sample_buffer)
 {
     int ret;
@@ -186,13 +198,12 @@ static int adc_sample(uint16_t *adc_sample_buffer)
 
     if (adc_dev == NULL)
     {
-        // printk("adc_sample(): error, must bind to adc first \n\r");
         return -1;
     }
     ret = adc_read(adc_dev, &sequence);
     if (ret)
     {
-        // printk("adc_read() failed with code %d\n", ret);
+        ;
     }
     else if (adc_sample_buffer[0] > 1023)
     {
@@ -208,11 +219,10 @@ static int adc_sample(uint16_t *adc_sample_buffer)
 }
 
 /**
- * @brief Filter array values from the adc buffer
- *
- * @return int16_t
-
-  */
+ * Filter array values from the adc buffer
+ * @param  arr               uint16_t
+ * @return     int16_t
+ */
 int16_t filter(uint16_t *arr)
 {
     int i;
@@ -238,11 +248,10 @@ int16_t filter(uint16_t *arr)
 }
 
 /**
- * @brief Verify commands
- *
- * @return bool
-
-  */
+ * Verify commands
+ * @param  cmd               char
+ * @return     boolean
+ */
 bool verifyCommand(char *cmd)
 {
     char colonArray[] = {2, 5, 11, 14};
@@ -313,22 +322,19 @@ const uint32_t DECIMAL_SECONDS = 10;        ///< Alias for DECIMAL_SECONDS label
 const uint32_t UNIT_SECONDS = 1;            ///< Alias for UNIT_SECONDS label
 
 /**
- * @brief Formatation of time
- *
- * @return uint32_t
-
-  */
+ * Formatation of time
+ * @param  cmd               char
+ * @return     uint32_t
+ */
 uint32_t timeFormatToSeconds(char *cmd)
 {
     return (cmd[0] - '0') * DECIMAL_HOUR + (cmd[1] - '0') * UNIT_HOUR + (cmd[3] - '0') * DECIMAL_MINUTE + (cmd[4] - '0') * UNIT_MINUTE + (cmd[6] - '0') * DECIMAL_SECONDS + (cmd[7] - '0') * UNIT_SECONDS;
 }
 
 /**
- * @brief Implementation of rules
- *
- * @return void
-
-  */
+ * Implementation of Rules
+ * @param cmd  char
+ */
 void addRule(char *cmd)
 {
     uint32_t start = timeFormatToSeconds(cmd);
@@ -345,11 +351,10 @@ void addRule(char *cmd)
     printk("Adding rule %d - %d = %d\n", start, end, intensity);
 }
 /**
- * @brief Receive desired intensity
- *
- * @return uint32_t
-
-  */
+ * Receive desired intensity
+ * @param  milli               uint32_t
+ * @return       uint32_t
+ */
 uint32_t getDesiredIntensity(uint32_t milli)
 {
     uint32_t totalSeconds = (milli / 1000) % SECONDS_IN_A_DAY;
@@ -368,11 +373,9 @@ uint32_t getDesiredIntensity(uint32_t milli)
     return 0;
 }
 /**
- * @brief Handler of the commands
- *
- * @return void
-
-  */
+ * Handler of the commands
+ * @param cmd  char
+ */
 void commandHandler(char *cmd)
 {
 
@@ -384,13 +387,10 @@ void commandHandler(char *cmd)
     printk("Command verified with success\n");
     addRule(cmd);
 }
-
 /**
- * @brief Handler of Events
- *
- * @return void
-
-  */
+ * Handler of Events
+ * @param event  uint8_t
+ */
 void eventHandler(uint8_t event)
 {
     switch (event)
@@ -430,13 +430,10 @@ void eventHandler(uint8_t event)
         break;
     }
 }
-
 /**
- * @brief Main
- *
- * @return int
-
-  */
+ * Main function
+ * @return  int
+ */
 int main(void)
 {
 
@@ -499,13 +496,10 @@ int main(void)
 
     return;
 }
-
 /**
- * @brief Thread to read buttons
- *
- * @return void
-
-  */
+ * Thread to read buttons
+ * @param args  void
+ */
 void thread_button_reader(void *args)
 {
     int64_t fin_time = 0, release_time = 0;
@@ -549,13 +543,10 @@ void thread_button_reader(void *args)
             release_time += button_reader_period;
     }
 }
-
 /**
- * @brief Thread filter values
- *
- * @return void
-
-  */
+ * Thread filter values
+ * @param args  void
+ */
 void thread_value_filter(void *args)
 {
     int64_t fin_time = 0, release_time = 0;
@@ -582,11 +573,9 @@ void thread_value_filter(void *args)
     }
 }
 /**
- * @brief Thread controller
- *
- * @return void
-
-  */
+ * Thread Controller
+ * @param args  void
+ */
 void thread_controller(void *args)
 {
     int64_t fin_time = 0, release_time = 0;
@@ -649,13 +638,10 @@ void thread_controller(void *args)
             release_time += controller_period;
     }
 }
-
 /**
- * @brief Thread to read terminal
- *
- * @return void
-
-  */
+ * Thread to read terminal
+ * @param args  void
+ */
 void thread_terminal_reader(void *args)
 {
     uint8_t c;
@@ -674,7 +660,6 @@ void thread_terminal_reader(void *args)
         if (c == '\r')
         {
             // read command
-            // console_putchar()
             console_putchar('\n');
             data_event.type = KEYBOARD_EVENT;
             commandHandler(terminalBuffer);
