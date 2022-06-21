@@ -71,8 +71,6 @@
 #define PWM_FLAGS 0              ///< PWM flags
 #endif
 
-struct k_fifo fifo_ab;
-
 uint16_t adcbuffer[ARRAY_SIZE];
 _Atomic uint16_t avg_value = 0;
 
@@ -468,7 +466,6 @@ int main(void)
     }
     k_mutex_init(&rule_lock);
 
-    /* ADC setup: bind and initialize */
     adc_dev = device_get_binding(DT_LABEL(ADC_NID));
     if (!adc_dev)
     {
@@ -480,9 +477,10 @@ int main(void)
         printk("adc_channel_setup() failed with error code %d\n", err);
     }
 
-    k_fifo_init(&fifo_ab);
-
     printk("Manual mode is active\n");
+
+    // thread initialization
+
     value_filter_tid = k_thread_create(&value_filter_data, value_filter_stack,
                                        K_THREAD_STACK_SIZEOF(value_filter_stack), thread_value_filter,
                                        NULL, NULL, NULL, value_filter_prio, 0, K_NO_WAIT);
@@ -531,7 +529,6 @@ void thread_button_reader(void *args)
                 {
                     buttondb[btidx].state = 1;
                     data_event.type = btidx;
-                    k_fifo_put(&fifo_ab, &data_event);
                     eventHandler(btidx);
                 }
             }
@@ -680,7 +677,6 @@ void thread_terminal_reader(void *args)
             // console_putchar()
             console_putchar('\n');
             data_event.type = KEYBOARD_EVENT;
-            k_fifo_put(&fifo_ab, &data_event);
             commandHandler(terminalBuffer);
             memset(terminalBuffer, '\0', sizeof(terminalBuffer));
             idxBuffer = 0;
