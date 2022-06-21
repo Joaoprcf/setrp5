@@ -513,7 +513,6 @@ void thread_button_reader(void *args)
                 if (buttondb[btidx].dcIndex == 3)
                 {
                     buttondb[btidx].state = 1;
-                    data_event.type = btidx;
                     eventHandler(btidx);
                 }
             }
@@ -650,7 +649,6 @@ void thread_terminal_reader(void *args)
         {
             // read command
             console_putchar('\n');
-            data_event.type = KEYBOARD_EVENT;
             commandHandler(terminalBuffer);
             memset(terminalBuffer, '\0', sizeof(terminalBuffer));
             idxBuffer = 0;
