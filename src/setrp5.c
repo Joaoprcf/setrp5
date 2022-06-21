@@ -1,5 +1,5 @@
 /**
- * @file EmbebbedStudioMain.c
+ * @file Setrp5.c
  * @author João Ferreira (joaoprcf@ua.pt), Daniel Oliveira (danielsoliveira@ua.pt), João Carvalho (jpmffc@ua.pt)
  * @brief SETR Lab 5 project
  * @version 0.1
@@ -76,15 +76,7 @@ _Atomic uint16_t avg_value = 0; ///< Avg value for the readings
 
 _Atomic bool manualMode = true;       ///< Bool for the Manual/Auto Mode
 _Atomic uint32_t manualIntensity = 0; ///< Intensity for Manual mode
-/**
- * @brief Struct for fifo
 
-  */
-struct data_item_t
-{
-    void *fifo_reserved; /* 1st word reserved for use by FIFO */
-    uint8_t type;        /* Event type */
-};
 /**
  * @brief Struct for the Button
 
@@ -505,7 +497,6 @@ void thread_button_reader(void *args)
     int64_t fin_time = 0, release_time = 0;
     release_time = k_uptime_get() + button_reader_period;
     // logic
-    struct data_item_t data_event;
     while (1)
     {
         fin_time = k_uptime_get();
@@ -645,8 +636,6 @@ void thread_controller(void *args)
 void thread_terminal_reader(void *args)
 {
     uint8_t c;
-
-    struct data_item_t data_event;
 
     while (1)
     {
