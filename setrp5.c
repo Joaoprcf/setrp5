@@ -26,68 +26,49 @@
 #include <console/console.h>
 #include <time.h>
 
-<<<<<<< HEAD
-
-#define DEBUGREADINGS 1                              ///< Alias for DEBUGREADINGS
-#define GPIO0_NID DT_NODELABEL(gpio0)                ///< Alias for the node label
-#define SW4_NODE 0x1c                                ///< Alias for external button 0
-#define SW5_NODE 0x1d                                ///< Alias for external button 1
-#define SW6_NODE 0x1e                                ///< Alias for external button 2
-#define SW7_NODE 0x1f                                ///< Alias for external button 3
-#define BUTTON_NUM 4                                 ///< Total number of buttons
-#define KEYBOARD_EVENT 4                             ///< Alias for the KEYBOARD_EVENT
-=======
-#define DEBUGREADINGS 1
+#define DEBUGREADINGS 1               ///< Alias for DEBUGREADINGS
 #define GPIO0_NID DT_NODELABEL(gpio0) ///< Alias for the node label
 #define SW4_NODE 0x1c                 ///< Alias for external button 0
 #define SW5_NODE 0x1d                 ///< Alias for external button 1
 #define SW6_NODE 0x1e                 ///< Alias for external button 2
 #define SW7_NODE 0x1f                 ///< Alias for external button 3
 #define BUTTON_NUM 4                  ///< Total number of buttons
-#define KEYBOARD_EVENT 4
->>>>>>> dec74cbb57a8162710bfa57f43a946e3aed3d51a
+#define KEYBOARD_EVENT 4              ///< Alias for the KEYBOARD_EVENT
 
-#define button_reader_prio 1                         ///< Priority for the button reader thread
-#define value_filter_prio 1                          ///< Priority for the filter thread
-#define controller_prio 1                            ///< Priority for the controller thread
-#define terminal_reader_prio 1                       ///< Priority for the terminal reader thread
+#define button_reader_prio 1   ///< Priority for the button reader thread
+#define value_filter_prio 1    ///< Priority for the filter thread
+#define controller_prio 1      ///< Priority for the controller thread
+#define terminal_reader_prio 1 ///< Priority for the terminal reader thread
 
-<<<<<<< HEAD
+#define button_reader_period 20  ///< Period for reading buttons
+#define value_filter_period 1000 ///< Period for filter
+#define controller_period 200    ///< Period for controller
 
-#define button_reader_period 20                      ///< Period for reading buttons
-#define value_filter_period 1000                     ///< Period for filter
-#define controller_period 200                        ///< Period for controller
-=======
-#define button_reader_period 20
-#define value_filter_period 1000
-#define controller_period 200
->>>>>>> dec74cbb57a8162710bfa57f43a946e3aed3d51a
+#define STACK_SIZE 1024         ///< Number for the stack size
+#define ARRAY_SIZE 5            ///< Size of the array
+#define BUFFER_SIZE 10          ///< Size of the buffer
+#define TERMINAL_BUFFER_SIZE 23 ///< Size of the terminal buffer
+#define SECONDS_IN_A_DAY 86400  ///< Number of seconds in a day
 
-#define STACK_SIZE 1024                              ///< Number for the stack size
-#define ARRAY_SIZE 5                                 ///< Size of the array
-#define BUFFER_SIZE 10                               ///< Size of the buffer
-#define TERMINAL_BUFFER_SIZE 23                      ///< Size of the terminal buffer
-#define SECONDS_IN_A_DAY 86400                       ///< Number of seconds in a day
+#define ADC_NID DT_NODELABEL(adc)                                        ///< Label of the ADC
+#define ADC_RESOLUTION 10                                                ///< ADC resolutation
+#define ADC_GAIN ADC_GAIN_1_4                                            ///< ADC gain
+#define ADC_REFERENCE ADC_REF_VDD_1_4                                    ///< ADC reference
+#define ADC_ACQUISITION_TIME ADC_ACQ_TIME(ADC_ACQ_TIME_MICROSECONDS, 40) ///< ADC time of acquisition
+#define ADC_CHANNEL_ID 1                                                 ///< ADC id channel
+#define ADC_CHANNEL_INPUT NRF_SAADC_INPUT_AIN1                           ///< ADC input channel
 
-#define ADC_NID DT_NODELABEL(adc)                    ///< Label of the ADC
-#define ADC_RESOLUTION 10                            ///< ADC resolutation
-#define ADC_GAIN ADC_GAIN_1_4                        ///< ADC gain
-#define ADC_REFERENCE ADC_REF_VDD_1_4                ///< ADC reference
-#define ADC_ACQUISITION_TIME ADC_ACQ_TIME(ADC_ACQ_TIME_MICROSECONDS, 40)            ///< ADC time of acquisition
-#define ADC_CHANNEL_ID 1                             ///< ADC id channel
-#define ADC_CHANNEL_INPUT NRF_SAADC_INPUT_AIN1       ///< ADC input channel
-
-#define PWM_LED0_NODE DT_ALIAS(pwm_led0)             ///< Alias for the PWM node
+#define PWM_LED0_NODE DT_ALIAS(pwm_led0) ///< Alias for the PWM node
 
 #if DT_NODE_HAS_STATUS(PWM_LED0_NODE, okay)
-#define PWM_CTLR DT_PWMS_CTLR(PWM_LED0_NODE)         ///< PWM controller
-#define PWM_CHANNEL DT_PWMS_CHANNEL(PWM_LED0_NODE)   ///< PWM channel
-#define PWM_FLAGS DT_PWMS_FLAGS(PWM_LED0_NODE)       ///< PWM flags
+#define PWM_CTLR DT_PWMS_CTLR(PWM_LED0_NODE)       ///< PWM controller
+#define PWM_CHANNEL DT_PWMS_CHANNEL(PWM_LED0_NODE) ///< PWM channel
+#define PWM_FLAGS DT_PWMS_FLAGS(PWM_LED0_NODE)     ///< PWM flags
 #else
 #error "Unsupported board: pwm-led0 devicetree alias is not defined"
-#define PWM_CTLR DT_INVALID_NODE                     ///< PWM controller
-#define PWM_CHANNEL 0                                ///< PWM channel
-#define PWM_FLAGS 0                                  ///< PWM flags
+#define PWM_CTLR DT_INVALID_NODE ///< PWM controller
+#define PWM_CHANNEL 0            ///< PWM channel
+#define PWM_FLAGS 0              ///< PWM flags
 #endif
 
 struct k_fifo fifo_ab;
@@ -122,9 +103,6 @@ typedef struct st_rule
     uint32_t to;
     uint32_t intensity;
 
-<<<<<<< HEAD
-
-
 } Rule;
 
 /**
@@ -133,10 +111,6 @@ typedef struct st_rule
  * @return bool
 
   */
-=======
-} Rule;
-
->>>>>>> dec74cbb57a8162710bfa57f43a946e3aed3d51a
 bool isRuleValid(uint32_t seconds, Rule *rule)
 {
     if (rule->from < rule->to && seconds >= rule->from && seconds < rule->to)
@@ -196,15 +170,12 @@ static const struct adc_channel_cfg my_channel_cfg = {
     .channel_id = ADC_CHANNEL_ID,
     .input_positive = ADC_CHANNEL_INPUT};
 
-<<<<<<< HEAD
 /**
  * @brief Samples values to ADC sample buffer
  *
  * @return int
 
   */
-=======
->>>>>>> dec74cbb57a8162710bfa57f43a946e3aed3d51a
 static int adc_sample(uint16_t *adc_sample_buffer)
 {
     int ret;
@@ -252,10 +223,6 @@ int16_t filter(uint16_t *arr)
     for (i = 0; i < ARRAY_SIZE; i++)
     {
         sum += arr[i];
-<<<<<<< HEAD
-
-=======
->>>>>>> dec74cbb57a8162710bfa57f43a946e3aed3d51a
     }
     float mean = sum / (float)ARRAY_SIZE;
 
@@ -272,22 +239,12 @@ int16_t filter(uint16_t *arr)
     return ctn ? (uint16_t)(sum / (float)ctn) : (int)mean;
 }
 
-<<<<<<< HEAD
 /**
  * @brief Verify commands
  *
  * @return bool
 
   */
-bool verifyCommand(char* cmd){
-    char colonArray[] = {2,5,11,14};
-
-
-    if(cmd[TERMINAL_BUFFER_SIZE-1] != '\0') return false;
-    for(int idx = 0; idx < TERMINAL_BUFFER_SIZE -1 ; idx++){
-        bool shouldBeNum = true;
-        if(cmd[idx] == '\0'){
-=======
 bool verifyCommand(char *cmd)
 {
     char colonArray[] = {2, 5, 11, 14};
@@ -299,7 +256,6 @@ bool verifyCommand(char *cmd)
         bool shouldBeNum = true;
         if (cmd[idx] == '\0')
         {
->>>>>>> dec74cbb57a8162710bfa57f43a946e3aed3d51a
             printk("Should not be s0\n");
             return false;
         }
@@ -341,14 +297,9 @@ bool verifyCommand(char *cmd)
         }
     }
 
-<<<<<<< HEAD
-    int intensity = atoi(cmd+18);
-    if(intensity>1000){
-=======
     int intensity = atoi(cmd + 18);
     if (intensity > 1000)
     {
->>>>>>> dec74cbb57a8162710bfa57f43a946e3aed3d51a
         printk("Intensity should be less than 1000, it is %d\n", intensity);
         return false;
     }
@@ -356,12 +307,12 @@ bool verifyCommand(char *cmd)
     return true;
 }
 
-const uint32_t DECIMAL_HOUR = 10 * 60 * 60;          ///< Alias for DECIMAL_HOUR label
-const uint32_t UNIT_HOUR = 60 * 60;                  ///< Alias for UNIT_HOUR label
-const uint32_t DECIMAL_MINUTE = 10 * 60;             ///< Alias for DECIMAL_MINUTE label
-const uint32_t UNIT_MINUTE = 1 * 60;                 ///< Alias for UNIT_MINUTE label
-const uint32_t DECIMAL_SECONDS = 10;                 ///< Alias for DECIMAL_SECONDS label
-const uint32_t UNIT_SECONDS = 1;                     ///< Alias for UNIT_SECONDS label
+const uint32_t DECIMAL_HOUR = 10 * 60 * 60; ///< Alias for DECIMAL_HOUR label
+const uint32_t UNIT_HOUR = 60 * 60;         ///< Alias for UNIT_HOUR label
+const uint32_t DECIMAL_MINUTE = 10 * 60;    ///< Alias for DECIMAL_MINUTE label
+const uint32_t UNIT_MINUTE = 1 * 60;        ///< Alias for UNIT_MINUTE label
+const uint32_t DECIMAL_SECONDS = 10;        ///< Alias for DECIMAL_SECONDS label
+const uint32_t UNIT_SECONDS = 1;            ///< Alias for UNIT_SECONDS label
 
 /**
  * @brief Formatation of time
@@ -382,10 +333,6 @@ uint32_t timeFormatToSeconds(char *cmd)
   */
 void addRule(char *cmd)
 {
-<<<<<<< HEAD
-=======
-
->>>>>>> dec74cbb57a8162710bfa57f43a946e3aed3d51a
     uint32_t start = timeFormatToSeconds(cmd);
     uint32_t end = timeFormatToSeconds(cmd + 9);
     int intensity = atoi(cmd + 18);
@@ -427,28 +374,18 @@ uint32_t getDesiredIntensity(uint32_t milli)
  *
  * @return void
 
-<<<<<<< HEAD
   */
-void commandHandler(char* cmd) {
-
-    if(!verifyCommand(cmd)) {
-=======
 void commandHandler(char *cmd)
 {
 
     if (!verifyCommand(cmd))
     {
->>>>>>> dec74cbb57a8162710bfa57f43a946e3aed3d51a
         printk("Non valid command!\n");
         return;
     }
     printk("Command verified with success\n");
     addRule(cmd);
-<<<<<<< HEAD
-
-
 }
-
 
 /**
  * @brief Handler of Events
@@ -456,13 +393,8 @@ void commandHandler(char *cmd)
  * @return void
 
   */
-void eventHandler(uint8_t event){
-=======
-}
-
 void eventHandler(uint8_t event)
 {
->>>>>>> dec74cbb57a8162710bfa57f43a946e3aed3d51a
     switch (event)
     {
     case 0:
@@ -499,8 +431,6 @@ void eventHandler(uint8_t event)
     default:
         break;
     }
-<<<<<<< HEAD
-
 }
 
 /**
@@ -509,17 +439,10 @@ void eventHandler(uint8_t event)
  * @return int
 
   */
-int main(void) {
-
-  console_init();
-=======
-}
-
 int main(void)
 {
 
     console_init();
->>>>>>> dec74cbb57a8162710bfa57f43a946e3aed3d51a
 
     pwm = DEVICE_DT_GET(PWM_CTLR);
     if (!device_is_ready(pwm))
@@ -527,25 +450,6 @@ int main(void)
         printk("Error: PWM device %s is not ready\n", pwm->name);
         return;
     }
-<<<<<<< HEAD
-
-  for (int btidx = 0; btidx < BUTTON_NUM; btidx++)
-  {
-    int ret;
-    gpio0_dev[btidx] = device_get_binding(DT_LABEL(GPIO0_NID));
-    ret = gpio_pin_configure(gpio0_dev[btidx], SWNODE[btidx], GPIO_INPUT | GPIO_PULL_UP);
-    if (ret != 0)
-    {
-      printk("Error %d: failed to configure external button at index %d\n",
-             ret, btidx);
-      return 1;
-    }
-
-    buttondb[btidx].dcIndex = 0;
-    buttondb[btidx].state = 0;
-   }
-   k_mutex_init(&rule_lock);
-=======
 
     for (int btidx = 0; btidx < BUTTON_NUM; btidx++)
     {
@@ -563,7 +467,6 @@ int main(void)
         buttondb[btidx].state = 0;
     }
     k_mutex_init(&rule_lock);
->>>>>>> dec74cbb57a8162710bfa57f43a946e3aed3d51a
 
     /* ADC setup: bind and initialize */
     adc_dev = device_get_binding(DT_LABEL(ADC_NID));
@@ -593,19 +496,11 @@ int main(void)
                                      NULL, NULL, NULL, controller_prio, 0, K_NO_WAIT);
 
     terminal_reader_tid = k_thread_create(&terminal_reader_data, terminal_reader_stack,
-<<<<<<< HEAD
-                                   K_THREAD_STACK_SIZEOF(terminal_reader_stack), thread_terminal_reader,
-                                   NULL, NULL, NULL, terminal_reader_prio, 0, K_NO_WAIT);
-
-=======
                                           K_THREAD_STACK_SIZEOF(terminal_reader_stack), thread_terminal_reader,
                                           NULL, NULL, NULL, terminal_reader_prio, 0, K_NO_WAIT);
->>>>>>> dec74cbb57a8162710bfa57f43a946e3aed3d51a
 
     return;
 }
-
-<<<<<<< HEAD
 
 /**
  * @brief Thread to read buttons
@@ -613,11 +508,8 @@ int main(void)
  * @return void
 
   */
-void thread_button_reader(void *args) {
-=======
 void thread_button_reader(void *args)
 {
->>>>>>> dec74cbb57a8162710bfa57f43a946e3aed3d51a
     int64_t fin_time = 0, release_time = 0;
     release_time = k_uptime_get() + button_reader_period;
     // logic
@@ -628,30 +520,6 @@ void thread_button_reader(void *args)
         for (int btidx = 0; btidx < BUTTON_NUM; btidx++)
         {
 
-<<<<<<< HEAD
-        int val;
-
-        val = 1 - gpio_pin_get(gpio0_dev[btidx], SWNODE[btidx]);
-
-        if (val > 0)
-        {
-            buttondb[btidx].dcIndex += 1;
-            if (buttondb[btidx].dcIndex == 3)
-            {
-                buttondb[btidx].state = 1;
-                data_event.type = btidx;
-                k_fifo_put(&fifo_ab, &data_event);
-                eventHandler(btidx);
-
-            }
-        }
-        else
-        {
-            buttondb[btidx].dcIndex = 0;
-            buttondb[btidx].state = 0;
-        }
-        }
-=======
             int val;
 
             val = 1 - gpio_pin_get(gpio0_dev[btidx], SWNODE[btidx]);
@@ -673,7 +541,6 @@ void thread_button_reader(void *args)
                 buttondb[btidx].state = 0;
             }
         }
->>>>>>> dec74cbb57a8162710bfa57f43a946e3aed3d51a
 
         if (fin_time < release_time)
         {
@@ -686,27 +553,18 @@ void thread_button_reader(void *args)
     }
 }
 
-<<<<<<< HEAD
 /**
  * @brief Thread filter values
  *
  * @return void
 
   */
-void thread_value_filter(void *args) {
-=======
 void thread_value_filter(void *args)
 {
->>>>>>> dec74cbb57a8162710bfa57f43a946e3aed3d51a
     int64_t fin_time = 0, release_time = 0;
     release_time = k_uptime_get() + value_filter_period;
     uint16_t adc_sample_buffer[BUFFER_SIZE];
     // logic
-<<<<<<< HEAD
-
-    while(1) {
-=======
->>>>>>> dec74cbb57a8162710bfa57f43a946e3aed3d51a
 
     while (1)
     {
@@ -714,16 +572,8 @@ void thread_value_filter(void *args)
 
         int err = adc_sample(adc_sample_buffer);
         uint16_t avg_read = filter(adcbuffer);
-<<<<<<< HEAD
 
         avg_value = 1023 - avg_read;
-
-        fin_time = k_uptime_get();
-
-=======
-
-        avg_value = 1023 - avg_read;
->>>>>>> dec74cbb57a8162710bfa57f43a946e3aed3d51a
 
         if (fin_time < release_time)
         {
@@ -739,13 +589,9 @@ void thread_value_filter(void *args)
  *
  * @return void
 
-<<<<<<< HEAD
   */
-void thread_controller(void *args) {
-=======
 void thread_controller(void *args)
 {
->>>>>>> dec74cbb57a8162710bfa57f43a946e3aed3d51a
     int64_t fin_time = 0, release_time = 0;
     release_time = k_uptime_get() + controller_period;
     // logic
@@ -796,11 +642,7 @@ void thread_controller(void *args)
         int ret = pwm_pin_set_usec(pwm, PWM_CHANNEL, 1023U, 1023 - ((int)current_value), PWM_FLAGS);
 
         lastError = error;
-<<<<<<< HEAD
 
-
-=======
->>>>>>> dec74cbb57a8162710bfa57f43a946e3aed3d51a
         if (fin_time < release_time)
         {
             k_msleep(release_time - fin_time);
@@ -811,18 +653,14 @@ void thread_controller(void *args)
     }
 }
 
-<<<<<<< HEAD
 /**
  * @brief Thread to read terminal
  *
  * @return void
 
   */
-void thread_terminal_reader(void *args) {
-=======
 void thread_terminal_reader(void *args)
 {
->>>>>>> dec74cbb57a8162710bfa57f43a946e3aed3d51a
     uint8_t c;
 
     struct data_item_t data_event;
