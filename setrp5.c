@@ -202,13 +202,12 @@ static int adc_sample(uint16_t *adc_sample_buffer)
 
     if (adc_dev == NULL)
     {
-        // printk("adc_sample(): error, must bind to adc first \n\r");
         return -1;
     }
     ret = adc_read(adc_dev, &sequence);
     if (ret)
     {
-        // printk("adc_read() failed with code %d\n", ret);
+        ;
     }
     else if (adc_sample_buffer[0] > 1023)
     {
@@ -691,7 +690,6 @@ void thread_terminal_reader(void *args)
         if (c == '\r')
         {
             // read command
-            // console_putchar()
             console_putchar('\n');
             data_event.type = KEYBOARD_EVENT;
             k_fifo_put(&fifo_ab, &data_event);
