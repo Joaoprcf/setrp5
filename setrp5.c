@@ -508,8 +508,6 @@ void thread_value_filter(void *args)
         fin_time = k_uptime_get();
         uint32_t st = k_cycle_get_32();
 
-        uint16_t st = k_uptime_get();
-
         int err = adc_sample(adc_sample_buffer);
         uint16_t avg_read = filter(adcbuffer);
 
