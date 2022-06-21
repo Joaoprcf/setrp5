@@ -459,7 +459,6 @@ void thread_button_reader(void *args)
     while (1)
     {
         fin_time = k_uptime_get();
-        uint32_t st = k_cycle_get_32();
         for (int btidx = 0; btidx < BUTTON_NUM; btidx++)
         {
 
@@ -484,7 +483,7 @@ void thread_button_reader(void *args)
                 buttondb[btidx].state = 0;
             }
         }
-        printk("button_reader: %d\n", k_cycle_get_32() - st);
+
         if (fin_time < release_time)
         {
 
@@ -506,14 +505,12 @@ void thread_value_filter(void *args)
     while (1)
     {
         fin_time = k_uptime_get();
-        uint32_t st = k_cycle_get_32();
 
         int err = adc_sample(adc_sample_buffer);
         uint16_t avg_read = filter(adcbuffer);
 
         avg_value = 1023 - avg_read;
 
-        printk("value_filter: %d\n", k_cycle_get_32() - st);
         if (fin_time < release_time)
         {
             k_msleep(release_time - fin_time);
@@ -538,7 +535,6 @@ void thread_controller(void *args)
     while (1)
     {
         fin_time = k_uptime_get();
-        uint32_t st = k_cycle_get_32();
 
         uint32_t desiredIntensity;
         if (manualMode)
@@ -577,7 +573,6 @@ void thread_controller(void *args)
         int ret = pwm_pin_set_usec(pwm, PWM_CHANNEL, 1023U, 1023 - ((int)current_value), PWM_FLAGS);
 
         lastError = error;
-        printk("controller: %d\n", k_cycle_get_32() - st);
         if (fin_time < release_time)
         {
             k_msleep(release_time - fin_time);
