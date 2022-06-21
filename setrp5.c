@@ -1,6 +1,6 @@
 /**
  * @file EmbebbedStudioMain.c
- * @author João Ferreira (joaoprcf@ua.pt), Daniel Oliveira (danielsoliveira@ua.pt), João Carvalho
+ * @author João Ferreira (joaoprcf@ua.pt), Daniel Oliveira (danielsoliveira@ua.pt), João Carvalho (jpmffc@ua.pt)
  * @brief SETR Lab 5 project
  * @version 0.1
  * @date 2022-06-15
@@ -27,50 +27,50 @@
 #include <time.h>
 
 
-#define DEBUGREADINGS 1
+#define DEBUGREADINGS 1                              ///< Alias for DEBUGREADINGS
 #define GPIO0_NID DT_NODELABEL(gpio0)                ///< Alias for the node label
 #define SW4_NODE 0x1c                                ///< Alias for external button 0
 #define SW5_NODE 0x1d                                ///< Alias for external button 1
 #define SW6_NODE 0x1e                                ///< Alias for external button 2
 #define SW7_NODE 0x1f                                ///< Alias for external button 3
 #define BUTTON_NUM 4                                 ///< Total number of buttons
-#define KEYBOARD_EVENT 4
+#define KEYBOARD_EVENT 4                             ///< Alias for the KEYBOARD_EVENT
 
-#define button_reader_prio 1
-#define value_filter_prio 1
-#define controller_prio 1
-#define terminal_reader_prio 1
+#define button_reader_prio 1                         ///< Priority for the button reader thread
+#define value_filter_prio 1                          ///< Priority for the filter thread
+#define controller_prio 1                            ///< Priority for the controller thread
+#define terminal_reader_prio 1                       ///< Priority for the terminal reader thread
 
 
-#define button_reader_period 20
-#define value_filter_period 1000
-#define controller_period 200
+#define button_reader_period 20                      ///< Period for reading buttons
+#define value_filter_period 1000                     ///< Period for filter
+#define controller_period 200                        ///< Period for controller
 
-#define STACK_SIZE 1024
-#define ARRAY_SIZE 5
-#define BUFFER_SIZE 10
-#define TERMINAL_BUFFER_SIZE 23
-#define SECONDS_IN_A_DAY 86400
+#define STACK_SIZE 1024                              ///< Number for the stack size
+#define ARRAY_SIZE 5                                 ///< Size of the array
+#define BUFFER_SIZE 10                               ///< Size of the buffer
+#define TERMINAL_BUFFER_SIZE 23                      ///< Size of the terminal buffer
+#define SECONDS_IN_A_DAY 86400                       ///< Number of seconds in a day
 
-#define ADC_NID DT_NODELABEL(adc)
-#define ADC_RESOLUTION 10
-#define ADC_GAIN ADC_GAIN_1_4
-#define ADC_REFERENCE ADC_REF_VDD_1_4
-#define ADC_ACQUISITION_TIME ADC_ACQ_TIME(ADC_ACQ_TIME_MICROSECONDS, 40)
-#define ADC_CHANNEL_ID 1
-#define ADC_CHANNEL_INPUT NRF_SAADC_INPUT_AIN1
+#define ADC_NID DT_NODELABEL(adc)                    ///< Label of the ADC
+#define ADC_RESOLUTION 10                            ///< ADC resolutation
+#define ADC_GAIN ADC_GAIN_1_4                        ///< ADC gain
+#define ADC_REFERENCE ADC_REF_VDD_1_4                ///< ADC reference
+#define ADC_ACQUISITION_TIME ADC_ACQ_TIME(ADC_ACQ_TIME_MICROSECONDS, 40)            ///< ADC time of acquisition
+#define ADC_CHANNEL_ID 1                             ///< ADC id channel
+#define ADC_CHANNEL_INPUT NRF_SAADC_INPUT_AIN1       ///< ADC input channel
 
-#define PWM_LED0_NODE DT_ALIAS(pwm_led0)
+#define PWM_LED0_NODE DT_ALIAS(pwm_led0)             ///< Alias for the PWM node
 
 #if DT_NODE_HAS_STATUS(PWM_LED0_NODE, okay)
-#define PWM_CTLR DT_PWMS_CTLR(PWM_LED0_NODE)
-#define PWM_CHANNEL DT_PWMS_CHANNEL(PWM_LED0_NODE)
-#define PWM_FLAGS DT_PWMS_FLAGS(PWM_LED0_NODE)
+#define PWM_CTLR DT_PWMS_CTLR(PWM_LED0_NODE)         ///< PWM controller
+#define PWM_CHANNEL DT_PWMS_CHANNEL(PWM_LED0_NODE)   ///< PWM channel
+#define PWM_FLAGS DT_PWMS_FLAGS(PWM_LED0_NODE)       ///< PWM flags
 #else
 #error "Unsupported board: pwm-led0 devicetree alias is not defined"
-#define PWM_CTLR DT_INVALID_NODE
-#define PWM_CHANNEL 0
-#define PWM_FLAGS 0
+#define PWM_CTLR DT_INVALID_NODE                     ///< PWM controller
+#define PWM_CHANNEL 0                                ///< PWM channel
+#define PWM_FLAGS 0                                  ///< PWM flags
 #endif
 
 
@@ -108,11 +108,16 @@ typedef struct st_rule
     uint32_t to;
     uint32_t intensity;
 
-    
+
 
 } Rule;
 
+/**
+ * @brief Verification od rules
+ *
+ * @return bool
 
+  */
 bool isRuleValid(uint32_t seconds, Rule *rule)
 {
     if (rule->from < rule->to && seconds >= rule->from && seconds < rule->to)
@@ -176,9 +181,12 @@ void thread_terminal_reader(void *args);
     .channel_id = ADC_CHANNEL_ID,
     .input_positive = ADC_CHANNEL_INPUT};
 
+/**
+ * @brief Samples values to ADC sample buffer
+ *
+ * @return int
 
-
-
+  */
 static int adc_sample(uint16_t *adc_sample_buffer)
 {
     int ret;
@@ -216,7 +224,8 @@ static int adc_sample(uint16_t *adc_sample_buffer)
  * @brief Filter array values from the adc buffer
  *
  * @return int16_t
- */
+
+  */
 int16_t filter(uint16_t *arr)
 {
     int i;
@@ -225,7 +234,7 @@ int16_t filter(uint16_t *arr)
     for (i = 0; i < ARRAY_SIZE; i++)
     {
         sum += arr[i];
-        
+
     }
     float mean = sum / (float)ARRAY_SIZE;
 
@@ -242,13 +251,19 @@ int16_t filter(uint16_t *arr)
     return ctn ? (uint16_t)(sum / (float)ctn) : (int)mean;
 }
 
+/**
+ * @brief Verify commands
+ *
+ * @return bool
+
+  */
 bool verifyCommand(char* cmd){
     char colonArray[] = {2,5,11,14};
-    
+
 
     if(cmd[TERMINAL_BUFFER_SIZE-1] != '\0') return false;
     for(int idx = 0; idx < TERMINAL_BUFFER_SIZE -1 ; idx++){
-        bool shouldBeNum = true; 
+        bool shouldBeNum = true;
         if(cmd[idx] == '\0'){
             printk("Should not be s0\n");
             return false;
@@ -258,7 +273,7 @@ bool verifyCommand(char* cmd){
             if(cmd[idx] != '-'){
                 printk("Should be - on idx %d\n", idx);
                 return false;
-            } 
+            }
         }
         if(idx == 17) {
             shouldBeNum = false;
@@ -283,8 +298,6 @@ bool verifyCommand(char* cmd){
         }
     }
 
-    
-
     int intensity = atoi(cmd+18);
     if(intensity>1000){
         printk("Intensity should be less than 1000, it is %d\n", intensity);
@@ -294,22 +307,32 @@ bool verifyCommand(char* cmd){
     return true;
 }
 
-const uint32_t DECIMAL_HOUR = 10 * 60 * 60;
-const uint32_t UNIT_HOUR = 60 * 60;
-const uint32_t DECIMAL_MINUTE = 10 * 60;
-const uint32_t UNIT_MINUTE = 1 * 60;
-const uint32_t DECIMAL_SECONDS = 10;
-const uint32_t UNIT_SECONDS = 1;
+const uint32_t DECIMAL_HOUR = 10 * 60 * 60;          ///< Alias for DECIMAL_HOUR label
+const uint32_t UNIT_HOUR = 60 * 60;                  ///< Alias for UNIT_HOUR label
+const uint32_t DECIMAL_MINUTE = 10 * 60;             ///< Alias for DECIMAL_MINUTE label
+const uint32_t UNIT_MINUTE = 1 * 60;                 ///< Alias for UNIT_MINUTE label
+const uint32_t DECIMAL_SECONDS = 10;                 ///< Alias for DECIMAL_SECONDS label
+const uint32_t UNIT_SECONDS = 1;                     ///< Alias for UNIT_SECONDS label
 
+/**
+ * @brief Formatation of time
+ *
+ * @return uint32_t
+
+  */
 uint32_t timeFormatToSeconds(char *cmd)
 {
     return (cmd[0] - '0') * DECIMAL_HOUR + (cmd[1] - '0') * UNIT_HOUR + (cmd[3] - '0') * DECIMAL_MINUTE + (cmd[4] - '0') * UNIT_MINUTE + (cmd[6] - '0') * DECIMAL_SECONDS + (cmd[7] - '0') * UNIT_SECONDS;
 }
 
+/**
+ * @brief Implementation of rules
+ *
+ * @return void
+
+  */
 void addRule(char *cmd)
 {
-    
-    
     uint32_t start = timeFormatToSeconds(cmd);
     uint32_t end = timeFormatToSeconds(cmd + 9);
     int intensity = atoi(cmd + 18);
@@ -323,7 +346,12 @@ void addRule(char *cmd)
     k_mutex_unlock(&rule_lock);
     printk("Adding rule %d - %d = %d\n", start, end, intensity);
 }
+/**
+ * @brief Receive desired intensity
+ *
+ * @return uint32_t
 
+  */
 uint32_t getDesiredIntensity(uint32_t milli)
 {
     uint32_t totalSeconds = (milli / 1000) % SECONDS_IN_A_DAY;
@@ -331,31 +359,41 @@ uint32_t getDesiredIntensity(uint32_t milli)
     int ruleIdx;
     for (ruleIdx=0; ruleIdx < rules_size; ruleIdx++)
     {
-        
+
         if (isRuleValid(totalSeconds, &rules[ruleIdx]))
         {
             uint32_t intensity = rules[ruleIdx].intensity;
             return intensity;
         }
     }
-    
+
     return 0;
 }
+/**
+ * @brief Handler of the commands
+ *
+ * @return void
 
+  */
 void commandHandler(char* cmd) {
-    
+
     if(!verifyCommand(cmd)) {
         printk("Non valid command!\n");
-        return; 
+        return;
     }
     printk("Command verified with success\n");
     addRule(cmd);
 
-       
+
 }
 
 
+/**
+ * @brief Handler of Events
+ *
+ * @return void
 
+  */
 void eventHandler(uint8_t event){
     switch (event)
     {
@@ -374,27 +412,32 @@ void eventHandler(uint8_t event){
         if(!manualMode) break;
         if(manualIntensity>10)
             manualIntensity -= 10;
-        else 
+        else
             manualIntensity = 0;
         printk("Intensity is %d\n", manualIntensity);
-        break; 
-      
+        break;
+
     case 3:
         if(!manualMode) break;
         if(manualIntensity+10 < 1000)
             manualIntensity += 10;
-        else 
+        else
             manualIntensity = 1000;
         printk("Intensity is %d\n", manualIntensity);
-        break; 
-   
+        break;
+
     default:
         break;
     }
-    
+
 }
 
+/**
+ * @brief Main
+ *
+ * @return int
 
+  */
 int main(void) {
 
   console_init();
@@ -405,7 +448,7 @@ int main(void) {
         printk("Error: PWM device %s is not ready\n", pwm->name);
         return;
     }
-  
+
   for (int btidx = 0; btidx < BUTTON_NUM; btidx++)
   {
     int ret;
@@ -422,7 +465,7 @@ int main(void) {
     buttondb[btidx].state = 0;
    }
    k_mutex_init(&rule_lock);
-    
+
     /* ADC setup: bind and initialize */
     adc_dev = device_get_binding(DT_LABEL(ADC_NID));
     if (!adc_dev)
@@ -453,13 +496,18 @@ int main(void) {
     terminal_reader_tid = k_thread_create(&terminal_reader_data, terminal_reader_stack,
                                    K_THREAD_STACK_SIZEOF(terminal_reader_stack), thread_terminal_reader,
                                    NULL, NULL, NULL, terminal_reader_prio, 0, K_NO_WAIT);
-       
+
 
     return;
 }
 
 
+/**
+ * @brief Thread to read buttons
+ *
+ * @return void
 
+  */
 void thread_button_reader(void *args) {
     int64_t fin_time = 0, release_time = 0;
     release_time = k_uptime_get() + button_reader_period;
@@ -472,19 +520,19 @@ void thread_button_reader(void *args) {
         {
 
         int val;
-      
+
         val = 1 - gpio_pin_get(gpio0_dev[btidx], SWNODE[btidx]);
-        
+
         if (val > 0)
         {
             buttondb[btidx].dcIndex += 1;
             if (buttondb[btidx].dcIndex == 3)
             {
-                buttondb[btidx].state = 1;  
+                buttondb[btidx].state = 1;
                 data_event.type = btidx;
                 k_fifo_put(&fifo_ab, &data_event);
                 eventHandler(btidx);
-               
+
             }
         }
         else
@@ -492,12 +540,12 @@ void thread_button_reader(void *args) {
             buttondb[btidx].dcIndex = 0;
             buttondb[btidx].state = 0;
         }
-        }    
+        }
 
         fin_time = k_uptime_get();
         if (fin_time < release_time)
         {
-            
+
             k_msleep(release_time - fin_time);
             release_time += button_reader_period;
         }
@@ -506,23 +554,28 @@ void thread_button_reader(void *args) {
     }
 }
 
+/**
+ * @brief Thread filter values
+ *
+ * @return void
 
+  */
 void thread_value_filter(void *args) {
     int64_t fin_time = 0, release_time = 0;
     release_time = k_uptime_get() + value_filter_period;
     uint16_t adc_sample_buffer[BUFFER_SIZE];
     // logic
-    
+
     while(1) {
 
 
         int err = adc_sample(adc_sample_buffer);
         uint16_t avg_read = filter(adcbuffer);
-        
+
         avg_value = 1023 - avg_read;
 
         fin_time = k_uptime_get();
-    
+
 
         if (fin_time < release_time)
         {
@@ -533,12 +586,17 @@ void thread_value_filter(void *args) {
           release_time += value_filter_period;
     }
 }
+/**
+ * @brief Thread controller
+ *
+ * @return void
 
+  */
 void thread_controller(void *args) {
     int64_t fin_time = 0, release_time = 0;
     release_time = k_uptime_get() + controller_period;
     // logic
-    
+
     int error = 0;
     int lastError = 0;
     float correctionP = 0, correctionD = 0;
@@ -559,8 +617,8 @@ void thread_controller(void *args) {
         error = desiredIntensity - avg_value;
         int errorDiff = error - lastError;
 
-        correctionP = error * 0.1; 
-        correctionD = errorDiff * 0.02; 
+        correctionP = error * 0.1;
+        correctionD = errorDiff * 0.02;
         current_value += correctionP + correctionD;
         if(current_value<0) {
             current_value = 0;
@@ -578,7 +636,7 @@ void thread_controller(void *args) {
         int ret = pwm_pin_set_usec(pwm, PWM_CHANNEL, 1023U, 1023-((int)current_value), PWM_FLAGS);
 
         lastError = error;
-        
+
 
         if (fin_time < release_time)
         {
@@ -590,10 +648,15 @@ void thread_controller(void *args) {
     }
 }
 
+/**
+ * @brief Thread to read terminal
+ *
+ * @return void
 
+  */
 void thread_terminal_reader(void *args) {
     uint8_t c;
-    
+
     struct data_item_t data_event;
 
     while(1) {
@@ -619,4 +682,3 @@ void thread_terminal_reader(void *args) {
         }
     }
 }
-
