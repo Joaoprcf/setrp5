@@ -460,8 +460,6 @@ void thread_button_reader(void *args)
     {
         fin_time = k_uptime_get();
         uint32_t st = k_cycle_get_32();
-
-        int64_t st = k_uptime_get();
         for (int btidx = 0; btidx < BUTTON_NUM; btidx++)
         {
 
