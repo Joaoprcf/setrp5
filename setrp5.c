@@ -119,11 +119,11 @@ typedef struct st_rule
 
 } Rule;
 
-/**
- * @brief Verification of rules
- *
- * @return bool
-
+ /**
+  * Verification of Rules
+  * @param  seconds               uint32_t
+  * @param  rule                  Rule
+  * @return         boolean
   */
 bool isRuleValid(uint32_t seconds, Rule *rule)
 {
@@ -184,11 +184,10 @@ static const struct adc_channel_cfg my_channel_cfg = {
     .channel_id = ADC_CHANNEL_ID,
     .input_positive = ADC_CHANNEL_INPUT};
 
-/**
- * @brief Samples values to ADC sample buffer
- *
- * @return int
-
+ /**
+  * Samples values of ADC
+  * @param  adc_sample_buffer               uint16_t
+  * @return                   int
   */
 static int adc_sample(uint16_t *adc_sample_buffer)
 {
@@ -222,11 +221,10 @@ static int adc_sample(uint16_t *adc_sample_buffer)
     return ret;
 }
 
-/**
- * @brief Filter array values from the adc buffer
- *
- * @return int16_t
-
+ /**
+  * Filter array values from the adc buffer
+  * @param  arr               uint16_t
+  * @return     int16_t
   */
 int16_t filter(uint16_t *arr)
 {
@@ -252,11 +250,10 @@ int16_t filter(uint16_t *arr)
     return ctn ? (uint16_t)(sum / (float)ctn) : (int)mean;
 }
 
-/**
- * @brief Verify commands
- *
- * @return bool
-
+ /**
+  * Verify commands
+  * @param  cmd               char
+  * @return     boolean
   */
 bool verifyCommand(char *cmd)
 {
@@ -327,22 +324,19 @@ const uint32_t UNIT_MINUTE = 1 * 60;        ///< Alias for UNIT_MINUTE label
 const uint32_t DECIMAL_SECONDS = 10;        ///< Alias for DECIMAL_SECONDS label
 const uint32_t UNIT_SECONDS = 1;            ///< Alias for UNIT_SECONDS label
 
-/**
- * @brief Formatation of time
- *
- * @return uint32_t
-
+ /**
+  * Formatation of time
+  * @param  cmd               char
+  * @return     uint32_t
   */
 uint32_t timeFormatToSeconds(char *cmd)
 {
     return (cmd[0] - '0') * DECIMAL_HOUR + (cmd[1] - '0') * UNIT_HOUR + (cmd[3] - '0') * DECIMAL_MINUTE + (cmd[4] - '0') * UNIT_MINUTE + (cmd[6] - '0') * DECIMAL_SECONDS + (cmd[7] - '0') * UNIT_SECONDS;
 }
 
-/**
- * @brief Implementation of rules
- *
- * @return void
-
+ /**
+  * Implementation of Rules
+  * @param cmd  char
   */
 void addRule(char *cmd)
 {
@@ -359,11 +353,10 @@ void addRule(char *cmd)
     k_mutex_unlock(&rule_lock);
     printk("Adding rule %d - %d = %d\n", start, end, intensity);
 }
-/**
- * @brief Receive desired intensity
- *
- * @return uint32_t
-
+ /**
+  * Receive desired intensity
+  * @param  milli               uint32_t
+  * @return       uint32_t
   */
 uint32_t getDesiredIntensity(uint32_t milli)
 {
@@ -382,11 +375,9 @@ uint32_t getDesiredIntensity(uint32_t milli)
 
     return 0;
 }
-/**
- * @brief Handler of the commands
- *
- * @return void
-
+ /**
+  * Handler of the commands
+  * @param cmd  char
   */
 void commandHandler(char *cmd)
 {
@@ -399,12 +390,9 @@ void commandHandler(char *cmd)
     printk("Command verified with success\n");
     addRule(cmd);
 }
-
-/**
- * @brief Handler of Events
- *
- * @return void
-
+ /**
+  * Handler of Events
+  * @param event  uint8_t
   */
 void eventHandler(uint8_t event)
 {
@@ -445,12 +433,9 @@ void eventHandler(uint8_t event)
         break;
     }
 }
-
-/**
- * @brief This is the Main function
- *
- * @return int
-
+ /**
+  * Main function
+  * @return  int
   */
 int main(void)
 {
@@ -514,12 +499,9 @@ int main(void)
 
     return;
 }
-
-/**
- * @brief Thread to read buttons
- *
- * @return void
-
+ /**
+  * Thread to read buttons
+  * @param args  void
   */
 void thread_button_reader(void *args)
 {
@@ -565,12 +547,9 @@ void thread_button_reader(void *args)
             release_time += button_reader_period;
     }
 }
-
-/**
- * @brief Thread filter values
- *
- * @return void
-
+ /**
+  * Thread filter values
+  * @param args  void
   */
 void thread_value_filter(void *args)
 {
@@ -597,11 +576,9 @@ void thread_value_filter(void *args)
             release_time += value_filter_period;
     }
 }
-/**
- * @brief Thread controller
- *
- * @return void
-
+ /**
+  * Thread Controller
+  * @param args  void
   */
 void thread_controller(void *args)
 {
@@ -665,12 +642,9 @@ void thread_controller(void *args)
             release_time += controller_period;
     }
 }
-
-/**
- * @brief Thread to read terminal
- *
- * @return void
-
+ /**
+  * Thread to read terminal
+  * @param args  void
   */
 void thread_terminal_reader(void *args)
 {
