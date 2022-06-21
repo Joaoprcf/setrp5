@@ -563,7 +563,7 @@ void thread_controller(void *args)
             current_value = 1023;
         }
 
-        if (DEBUGREADINGS)
+        if (manualMode)
         {
             printk("Avg value: %3u, Desired Intensity: %3u, Current led value: %u\n", avg_value, desiredIntensity, (int)current_value);
             int correction = (int)((correctionP + correctionD) * 100);
