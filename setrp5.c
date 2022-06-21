@@ -71,32 +71,46 @@
 #define PWM_FLAGS 0              ///< PWM flags
 #endif
 
-struct k_fifo fifo_ab;
+struct k_fifo fifo_ab;  ///< Fifo struct
 
-uint16_t adcbuffer[ARRAY_SIZE];
-_Atomic uint16_t avg_value = 0;
+uint16_t adcbuffer[ARRAY_SIZE]; ///< ADC buffer
+_Atomic uint16_t avg_value = 0; ///< Avg value for the readings
 
-_Atomic bool manualMode = true;
-_Atomic uint32_t manualIntensity = 0;
+_Atomic bool manualMode = true; ///< Bool for the Manual/Auto Mode
+_Atomic uint32_t manualIntensity = 0; ///< Intensity for Manual mode
+/**
+ * @brief Struct for fifo
 
+  */
 struct data_item_t
 {
     void *fifo_reserved; /* 1st word reserved for use by FIFO */
     uint8_t type;        /* Event type */
 };
+/**
+ * @brief Struct for the Button
 
+  */
 static char SWNODE[] = {
     SW4_NODE,
     SW5_NODE,
     SW6_NODE,
-    SW7_NODE};
+    SW7_NODE
+  };
 
+/**
+ * @brief Struct for the Debouncer
+
+  */
 typedef struct debouncer
 {
     unsigned int dcIndex;
     char state;
 };
+/**
+ * @brief Struct for Rules
 
+  */
 typedef struct st_rule
 {
     uint32_t from;
@@ -106,7 +120,7 @@ typedef struct st_rule
 } Rule;
 
 /**
- * @brief Verification od rules
+ * @brief Verification of rules
  *
  * @return bool
 
@@ -122,40 +136,40 @@ bool isRuleValid(uint32_t seconds, Rule *rule)
     return false;
 }
 
-static struct debouncer buttondb[BUTTON_NUM];
-const struct device *gpio0_dev[BUTTON_NUM];
-const struct device *pwm = NULL;
+static struct debouncer buttondb[BUTTON_NUM];   ///< Struct Debouncer
+const struct device *gpio0_dev[BUTTON_NUM];     ///< Struct Device for the Board
+const struct device *pwm = NULL;                ///< Struct Device for the PWM
 
-const struct device *adc_dev = NULL;
-_Atomic uint8_t ptr = 0;
+const struct device *adc_dev = NULL;    ///< Struct Device for the ADC
+_Atomic uint8_t ptr = 0;                ///<
 
-static Rule rules[20];
-uint32_t rules_size = 0;
-struct k_mutex rule_lock;
+static Rule rules[20];        ///< Struct Rules
+uint32_t rules_size = 0;      ///< Size of Rules
+struct k_mutex rule_lock;     ///< Mutex for Rules
 
-char terminalBuffer[TERMINAL_BUFFER_SIZE] = {0};
-_Atomic int idxBuffer = 0;
+char terminalBuffer[TERMINAL_BUFFER_SIZE] = {0};    ///< Size of the buffer for the reading terminal
+_Atomic int idxBuffer = 0;                          ///< ID of the Atomic buffer
 
-K_THREAD_STACK_DEFINE(button_reader_stack, STACK_SIZE);
-K_THREAD_STACK_DEFINE(value_filter_stack, STACK_SIZE);
-K_THREAD_STACK_DEFINE(controller_stack, STACK_SIZE);
-K_THREAD_STACK_DEFINE(terminal_reader_stack, STACK_SIZE);
+K_THREAD_STACK_DEFINE(button_reader_stack, STACK_SIZE);     ///< Size fo Stack for the Thread reading buttons
+K_THREAD_STACK_DEFINE(value_filter_stack, STACK_SIZE);      ///< Size fo Stack for the Thread filter
+K_THREAD_STACK_DEFINE(controller_stack, STACK_SIZE);        ///< Size fo Stack for the Thread controller
+K_THREAD_STACK_DEFINE(terminal_reader_stack, STACK_SIZE);   ///< Size fo Stack for the Thread reading terminal
 
-struct k_thread button_reader_data;
-struct k_thread value_filter_data;
-struct k_thread controller_data;
-struct k_thread terminal_reader_data;
+struct k_thread button_reader_data;     ///< Struct for the thread reading buttons
+struct k_thread value_filter_data;      ///< Struct for the thread Filter
+struct k_thread controller_data;        ///< Struct for the thread controller
+struct k_thread terminal_reader_data;   ///< Struct for the thread reading terminal
 
 /* Create task IDs */
-k_tid_t button_reader_tid;
-k_tid_t value_filter_tid;
-k_tid_t controller_tid;
-k_tid_t terminal_reader_tid;
+k_tid_t button_reader_tid;        ///< ID for button thread
+k_tid_t value_filter_tid;         ///< ID for Filter thread
+k_tid_t controller_tid;           ///< ID for controller thread
+k_tid_t terminal_reader_tid;      ///< ID for terminal reader thread
 
-void thread_button_reader(void *args);
-void thread_value_filter(void *args);
-void thread_controller(void *args);
-void thread_terminal_reader(void *args);
+void thread_button_reader(void *args);    ///< Thread for reading buttons
+void thread_value_filter(void *args);     ///< Thread for the filter of values read
+void thread_controller(void *args);       ///< Thread for the controller
+void thread_terminal_reader(void *args);  ///< Thread for reading the terminal
 
 /**
  * @brief Retrieve an ADC sample a buffer
@@ -434,7 +448,7 @@ void eventHandler(uint8_t event)
 }
 
 /**
- * @brief Main
+ * @brief This is the Main function
  *
  * @return int
 
